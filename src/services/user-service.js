@@ -4,12 +4,12 @@ const {JWT_KEY} = require('../config/serverConfig')
 const bcrypt = require('bcrypt');
 class userService{
     constructor(){
-        this.UserRepository = new UserRepository();
+        this.userRepository = new UserRepository();
     }
 
     async create(data){
         try {
-                    const user = await this.UserRepository.create(data);
+                    const user = await this.userRepository.create(data);
                 return user;
                 } catch (error) {
                     console.log('Something went wrong on repository layer');
@@ -21,7 +21,7 @@ class userService{
     async signIn(email, plainPassword){
         try {
             //step1 fetch the user using the email
-            const user = await this.UserRepository.getUserByEmail(email);
+            const user = await this.userRepository.getUserByEmail(email);
             //step2 compare incoming plainPassword with stored encrypted password
             const passwordMatch= this.checkPassword(plainPassword, user.password);
             if(!passwordMatch){
@@ -36,6 +36,23 @@ class userService{
                     throw error;
         }
 
+    }
+
+    async isAuthenticated(token){
+        try {
+            const response= this.verifyToken(token);
+            if(!response){
+                throw {error:"Invalid Token"};
+            }
+            const user  =await this.userRepository.getById(response.id);
+            if(!user){
+                throw {error:"No user with the corresponding token exits"};
+            }
+            return user.id;
+        } catch (error) {
+            console.log('Something went wrong in the signin process');
+                    throw error;
+        }
     }
 
     createToken(user){
