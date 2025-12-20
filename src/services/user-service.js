@@ -12,7 +12,10 @@ class userService{
                     const user = await this.userRepository.create(data);
                 return user;
                 } catch (error) {
-                    console.log('Something went wrong on repository layer');
+                   {
+                    throw error;
+                   }
+                    console.log('Something went wrong in the signin process');
                     throw error;
                     
                 }
@@ -55,6 +58,8 @@ class userService{
         }
     }
 
+
+
     createToken(user){
     try {
         const result = jwt.sign(user,JWT_KEY ,{expiresIn: '1h'} );
@@ -81,6 +86,15 @@ class userService{
             
         } catch (error) {
             console.log('Something went wrong in password comparison');
+        throw error;
+        }
+    }
+
+    isAdmin(userId){
+        try {
+            return this.userRepository.isAdmin(userId);
+        } catch (error) {
+        console.log('Something went wrong in password comparison');
         throw error;
         }
     }
