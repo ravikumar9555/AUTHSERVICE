@@ -3,6 +3,9 @@ const {PORT} = require('./config/serverConfig')
 const bodyParser = require('body-parser')
 //const userService = require('../src/services/user-service')
 const apiRoutes = require('./routes/index')
+const db = require('./models/index')
+const {User} = require('./models/index');
+const {Role} = require("./models/index");
 const setupAndStartServer = async () => {
 
     // create the express object
@@ -22,7 +25,12 @@ const setupAndStartServer = async () => {
 
     app.listen(PORT, async () => {
         console.log(`Server started at ${PORT}`);
-   
+        if(process.env.DB_SYNC){
+           db.sequelize.sync({alter: true});
+        }
+        // const u1 = await User.findByPk(12);
+        // const r1 = await Role.findByPk(2);
+        // u1.addRoles(r1);
     
     });
 }
