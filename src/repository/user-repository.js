@@ -1,8 +1,10 @@
 
 const db = require('../models');  // import the whole db
 const User = db.User;             // extract the User model
-const {Role}= require('../models/index')
+const {Role}= require('../models/index');
+const ClientError = require('../utils/clientt-error');
 const ValidationError = require('../utils/Validation-error')
+const {StatusCodes}= require('http-status-codes')
 class UserRepository{
 
     async create(data){
@@ -54,6 +56,15 @@ class UserRepository{
                     email:userEmail
                 }
             });
+            if(!user){
+                   throw new ClientError(
+                    'AttributeNotFound',
+                    'Invalid email sent in the request',
+                    'Please check the email, as there is no record of the email ',
+                    StatusCodes.NOT_FOUND
+                   )
+            }
+            console.log(user);
             return user;
         } catch (error) {
             console.log('Something went wrong on repository layer');
