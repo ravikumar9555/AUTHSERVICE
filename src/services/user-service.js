@@ -21,28 +21,53 @@ class userService{
                 }
     }
 
-    async signIn(email, plainPassword){
-        try {
-            //step1 fetch the user using the email
-            const user = await this.userRepository.getUserByEmail(email);
-            //step2 compare incoming plainPassword with stored encrypted password
-            const passwordMatch= this.checkPassword(plainPassword, user.password);
-            if(!passwordMatch){
-                console.log('password not matched');
-                throw {error:"Incorrect password"};
-            }
+    async signIn(email, plainPassword) {
+  try {
+    // Step 1: fetch user by email
+    const user = await this.userRepository.getUserByEmail(email);
 
-            const newJwt= this.createToken({email:user.email ,id:user.id});
-            return newJwt;
-        } catch (error) {
-            if(error.name='AttributeNotFound'){
-                throw error;
-            }
-            console.log('Something went wrong in the signin process');
-                    throw error;
-        }
+    // Step 2: compare passwords
+    const passwordMatch = this.checkPassword(
+      plainPassword,
+      user.password
+    );
 
+    if (!passwordMatch) {
+      console.log("password not matched");
+
+      // ✅ THROW STRUCTURED ERROR
+      throw {
+        statusCode: 401,
+        message: "Incorrect password",
+      };
     }
+
+    // Step 3: create JWT
+    const newJwt = this.createToken({
+      email: user.email,
+      id: user.id,
+    });
+
+    return newJwt;
+
+  } catch (error) {
+    // ✅ FIXED COMPARISON
+    if (error.name === "AttributeNotFound") {
+      throw {
+        statusCode: 404,
+        message: "User not found",
+      };
+    }
+
+    console.log("Something went wrong in the signin process");
+
+    // ✅ ALWAYS THROW STRUCTURED ERROR
+    throw {
+      statusCode: error.statusCode || 500,
+      message: error.message || "Signin failed",
+    };
+  }
+}
 
     async isAuthenticated(token){
         try {
